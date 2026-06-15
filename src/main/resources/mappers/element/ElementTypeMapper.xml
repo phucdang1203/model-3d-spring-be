@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innervix.model3d.domain.element.model.ElementTypeMapper">
+    <resultMap id="ElementTypeMap" type="com.innervix.model3d.domain.element.model.ElementType">
+        <constructor>
+            <idArg column="id" javaType="string"/>
+            <arg column="element_key" javaType="string"/>
+            <arg column="name" javaType="string"/>
+            <arg column="description" javaType="string"/>
+            <arg column="icon" javaType="string"/>
+            <arg column="color" javaType="string"/>
+            <arg column="sort_order" javaType="integer"/>
+            <arg column="active" javaType="boolean"/>
+            <arg column="schema_json" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findActive" resultMap="ElementTypeMap">
+        SELECT id, element_key, name, description, icon, color, sort_order, active, schema_json, created_at, updated_at
+        FROM element_types
+        WHERE active = 1
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="findById" resultMap="ElementTypeMap">
+        SELECT id, element_key, name, description, icon, color, sort_order, active, schema_json, created_at, updated_at
+        FROM element_types
+        WHERE id = #{id}
+    </select>
+
+    <select id="nextSortOrder" resultType="int">
+        SELECT COALESCE(MAX(sort_order), 0) + 1
+        FROM element_types
+    </select>
+
+    <insert id="insert">
+        INSERT INTO element_types (id, element_key, name, description, icon, color, sort_order, active, schema_json)
+        VALUES (#{id}, #{request.key}, #{request.name}, #{request.description}, #{request.icon}, #{request.color}, #{sortOrder}, 1, #{request.schemaJson})
+    </insert>
+</mapper>

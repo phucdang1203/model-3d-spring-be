@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="ROOT_LEVEL">${env:ROOT_LOG_LEVEL:-INFO}</Property>
+        <Property name="APP_LEVEL">${env:APP_LOG_LEVEL:-DEBUG}</Property>
+        <Property name="MYBATIS_LEVEL">${env:MYBATIS_LOG_LEVEL:-DEBUG}</Property>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %c{1.} - %msg%n</Property>
+        <Property name="LOG_DIR">logs</Property>
+        <Property name="APP_NAME">model-3d-spring-be</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <RollingFile name="ApplicationFile"
+                     fileName="${LOG_DIR}/${APP_NAME}.log"
+                     filePattern="${LOG_DIR}/archive/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <RollingFile name="SqlFile"
+                     fileName="${LOG_DIR}/${APP_NAME}-sql.log"
+                     filePattern="${LOG_DIR}/archive/${APP_NAME}-sql-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.innervix.model3d" level="${APP_LEVEL}" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ApplicationFile"/>
+        </Logger>
+
+        <Logger name="org.apache.ibatis" level="${MYBATIS_LEVEL}" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="SqlFile"/>
+        </Logger>
+
+        <Logger name="org.mybatis" level="${MYBATIS_LEVEL}" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="SqlFile"/>
+        </Logger>
+
+        <Root level="${ROOT_LEVEL}">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ApplicationFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innervix.model3d.domain.animation.mapper.AnimationMapper">
+    <resultMap id="AnimationAssetMap" type="com.innervix.model3d.domain.animation.model.AnimationAsset">
+        <constructor>
+            <idArg column="id" javaType="string"/>
+            <arg column="name" javaType="string"/>
+            <arg column="description" javaType="string"/>
+            <arg column="tags_json" javaType="java.util.List" typeHandler="com.innervix.model3d.common.mybatis.StringListJsonTypeHandler"/>
+            <arg column="source_kind" javaType="string"/>
+            <arg column="original_filename" javaType="string"/>
+            <arg column="format" javaType="string"/>
+            <arg column="file_url" javaType="string"/>
+            <arg column="file_size" javaType="long"/>
+            <arg column="action_count" javaType="integer"/>
+            <arg column="actions_json" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, name, description, tags_json, source_kind, original_filename, format, file_url,
+        file_size, action_count, actions_json, created_at, updated_at
+    </sql>
+
+    <select id="findAll" resultMap="AnimationAssetMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM animation_assets
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findById" resultMap="AnimationAssetMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM animation_assets
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO animation_assets (
+            id, name, description, tags_json, source_kind, original_filename, format, file_url,
+            file_size, action_count, actions_json
+        ) VALUES (
+            #{asset.id}, #{asset.name}, #{asset.description},
+            #{asset.tags,typeHandler=com.innervix.model3d.common.mybatis.StringListJsonTypeHandler},
+            #{asset.sourceKind}, #{asset.originalFilename}, #{asset.format}, #{asset.fileUrl},
+            #{asset.fileSize}, #{asset.actionCount}, #{asset.actionsJson}
+        )
+    </insert>
+</mapper>

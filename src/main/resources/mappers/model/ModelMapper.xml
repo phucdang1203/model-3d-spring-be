@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innervix.model3d.domain.model.mapper.ModelMapper">
+    <resultMap id="ModelAssetMap" type="com.innervix.model3d.domain.model.model.ModelAsset">
+        <constructor>
+            <idArg column="id" javaType="string"/>
+            <arg column="name" javaType="string"/>
+            <arg column="description" javaType="string"/>
+            <arg column="tags_json" javaType="java.util.List" typeHandler="com.innervix.model3d.common.mybatis.StringListJsonTypeHandler"/>
+            <arg column="category" javaType="string"/>
+            <arg column="element_type_id" javaType="string"/>
+            <arg column="license" javaType="string"/>
+            <arg column="original_filename" javaType="string"/>
+            <arg column="format" javaType="string"/>
+            <arg column="file_url" javaType="string"/>
+            <arg column="thumbnail_url" javaType="string"/>
+            <arg column="file_size" javaType="long"/>
+            <arg column="polygon_count" javaType="integer"/>
+            <arg column="vertex_count" javaType="integer"/>
+            <arg column="material_count" javaType="integer"/>
+            <arg column="has_animations" javaType="boolean"/>
+            <arg column="has_textures" javaType="boolean"/>
+            <arg column="custom_props_json" javaType="string"/>
+            <arg column="bounding_box_json" javaType="string"/>
+            <arg column="position_json" javaType="com.innervix.model3d.common.model.Vector3" typeHandler="com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler"/>
+            <arg column="rotation_json" javaType="com.innervix.model3d.common.model.Vector3" typeHandler="com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler"/>
+            <arg column="scale_json" javaType="com.innervix.model3d.common.model.Vector3" typeHandler="com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler"/>
+            <arg column="download_count" javaType="integer"/>
+            <arg column="view_count" javaType="integer"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, name, description, tags_json, category, element_type_id, license, original_filename, format, file_url,
+        thumbnail_url, file_size, polygon_count, vertex_count, material_count, has_animations, has_textures,
+        custom_props_json, bounding_box_json, position_json, rotation_json, scale_json, download_count, view_count,
+        created_at, updated_at
+    </sql>
+
+    <select id="findAll" resultMap="ModelAssetMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM model_assets
+        WHERE 1 = 1
+        <if test="q != null and q != ''">
+            AND (
+                LOWER(name) LIKE CONCAT('%', LOWER(#{q}), '%')
+                OR LOWER(COALESCE(description, '')) LIKE CONCAT('%', LOWER(#{q}), '%')
+                OR LOWER(tags_json) LIKE CONCAT('%', LOWER(#{q}), '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="format != null and format != ''">
+            AND format = #{format}
+        </if>
+        <if test="elementTypeId != null and elementTypeId != ''">
+            AND element_type_id = #{elementTypeId}
+        </if>
+        <choose>
+            <when test="sort == 'downloads'">ORDER BY download_count DESC, created_at DESC</when>
+            <when test="sort == 'name'">ORDER BY name ASC</when>
+            <otherwise>ORDER BY created_at DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="findById" resultMap="ModelAssetMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM model_assets
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO model_assets (
+            id, name, description, tags_json, category, element_type_id, license, original_filename, format, file_url,
+            thumbnail_url, file_size, polygon_count, vertex_count, material_count, has_animations, has_textures,
+            custom_props_json, bounding_box_json, position_json, rotation_json, scale_json, download_count, view_count
+        ) VALUES (
+            #{model.id}, #{model.name}, #{model.description},
+            #{model.tags,typeHandler=com.innervix.model3d.common.mybatis.StringListJsonTypeHandler},
+            #{model.category}, #{model.elementTypeId}, #{model.license}, #{model.originalFilename}, #{model.format}, #{model.fileUrl},
+            #{model.thumbnailUrl}, #{model.fileSize}, #{model.polygonCount}, #{model.vertexCount}, #{model.materialCount},
+            #{model.hasAnimations}, #{model.hasTextures}, #{model.customPropsJson}, #{model.boundingBoxJson},
+            #{model.position,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler},
+            #{model.rotation,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler},
+            #{model.scale,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler},
+            #{model.downloadCount}, #{model.viewCount}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE model_assets
+        SET name = COALESCE(NULLIF(#{request.name}, ''), name),
+            description = #{request.description},
+            tags_json = COALESCE(#{request.tags,typeHandler=com.innervix.model3d.common.mybatis.StringListJsonTypeHandler}, tags_json),
+            category = COALESCE(NULLIF(#{request.category}, ''), category),
+            element_type_id = NULLIF(#{request.elementTypeId}, ''),
+            license = COALESCE(NULLIF(#{request.license}, ''), license),
+            has_animations = COALESCE(#{request.hasAnimations}, has_animations),
+            has_textures = COALESCE(#{request.hasTextures}, has_textures),
+            custom_props_json = #{request.customPropsJson},
+            position_json = COALESCE(#{request.position,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, position_json),
+            rotation_json = COALESCE(#{request.rotation,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, rotation_json),
+            scale_json = COALESCE(#{request.scale,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, scale_json)
+        WHERE id = #{id}
+    </update>
+
+    <update id="incrementView">
+        UPDATE model_assets
+        SET view_count = view_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <update id="incrementDownload">
+        UPDATE model_assets
+        SET download_count = download_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM model_assets
+        WHERE id = #{id}
+    </delete>
+</mapper>

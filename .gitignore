@@ -1,0 +1,10 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+uploads/
+upload-files/
+logs/
+*.log
+src/main/resources/application-local.yml

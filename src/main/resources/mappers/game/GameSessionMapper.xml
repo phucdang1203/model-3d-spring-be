@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innervix.model3d.domain.game.model.GameSessionMapper">
+    <resultMap id="GameSessionMap" type="com.innervix.model3d.domain.game.model.GameSession">
+        <constructor>
+            <idArg column="id" javaType="string"/>
+            <arg column="player_name" javaType="string"/>
+            <arg column="level_id" javaType="string"/>
+            <arg column="state_json" javaType="string"/>
+            <arg column="started_at" javaType="java.time.LocalDateTime"/>
+            <arg column="last_seen_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO game_sessions (id, player_name, level_id, state_json)
+        VALUES (#{id}, TRIM(#{request.playerName}), #{request.levelId}, #{request.stateJson})
+    </insert>
+
+    <select id="findById" resultMap="GameSessionMap">
+        SELECT id, player_name, level_id, state_json, started_at, last_seen_at
+        FROM game_sessions
+        WHERE id = #{id}
+    </select>
+</mapper>
