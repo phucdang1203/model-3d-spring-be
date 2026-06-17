@@ -27,7 +27,7 @@ public class AuthService implements CommandLineRunner {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        AdminUser admin = adminMapper.findByUsername(request.username())
+        AdminUser admin = adminMapper.findByUsername(request.loginName())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
         if (!admin.enabled() || !passwordEncoder.matches(request.password(), admin.passwordHash())) {
             throw new IllegalArgumentException("Invalid username or password");

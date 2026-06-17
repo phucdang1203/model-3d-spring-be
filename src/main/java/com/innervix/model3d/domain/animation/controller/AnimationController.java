@@ -24,12 +24,12 @@ public class AnimationController {
         this.service = service;
     }
 
-    @GetMapping("/api/v1/admin/animations")
+    @GetMapping({"/api/v1/admin/animations", "/api/animations"})
     public ApiResponse<List<AnimationAsset>> list() {
         return ApiResponse.ok(service.list());
     }
 
-    @PostMapping("/api/v1/admin/animations/upload")
+    @PostMapping({"/api/v1/admin/animations/upload", "/api/animations/upload"})
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AnimationAsset> upload(@RequestParam MultipartFile file, @ModelAttribute AnimationUploadRequest request) {
         return ApiResponse.ok(service.upload(file, request));

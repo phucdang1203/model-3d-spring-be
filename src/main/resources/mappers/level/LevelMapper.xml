@@ -8,6 +8,9 @@
         <constructor>
             <idArg column="id" javaType="string"/>
             <arg column="name" javaType="string"/>
+            <arg column="slug" javaType="string"/>
+            <arg column="description" javaType="string"/>
+            <arg column="status" javaType="string"/>
             <arg column="map_model_url" javaType="string"/>
             <arg column="player_character_json" javaType="string"/>
             <arg column="player_spawn_json" javaType="string"/>
@@ -15,15 +18,20 @@
             <arg column="robot_story" javaType="string"/>
             <arg column="story_graph_json" javaType="string"/>
             <arg column="zombie_spawns_json" javaType="string"/>
+            <arg column="map_characters_json" javaType="string"/>
             <arg column="placed_objects_json" javaType="string"/>
+            <arg column="max_players" javaType="integer"/>
+            <arg column="published_at" javaType="java.time.LocalDateTime"/>
+            <arg column="archived_at" javaType="java.time.LocalDateTime"/>
             <arg column="created_at" javaType="java.time.LocalDateTime"/>
             <arg column="updated_at" javaType="java.time.LocalDateTime"/>
         </constructor>
     </resultMap>
 
     <sql id="BaseColumns">
-        id, name, map_model_url, player_character_json, player_spawn_json, robot_spawn_json,
-        robot_story, story_graph_json, zombie_spawns_json, placed_objects_json, created_at, updated_at
+        id, name, slug, description, status, map_model_url, player_character_json, player_spawn_json, robot_spawn_json,
+        robot_story, story_graph_json, zombie_spawns_json, map_characters_json, placed_objects_json,
+        max_players, published_at, archived_at, created_at, updated_at
     </sql>
 
     <select id="findAll" resultMap="LevelMap">
@@ -40,22 +48,33 @@
 
     <insert id="upsert">
         INSERT INTO levels (
-            id, name, map_model_url, player_character_json, player_spawn_json, robot_spawn_json,
-            robot_story, story_graph_json, zombie_spawns_json, placed_objects_json
+            id, name, slug, description, status, map_model_url, player_character_json, player_spawn_json, robot_spawn_json,
+            robot_story, story_graph_json, zombie_spawns_json, map_characters_json, placed_objects_json,
+            max_players, published_at, archived_at
         ) VALUES (
             #{id},
-            #{request.name},
-            #{request.mapModelUrl},
-            #{request.playerCharacterJson},
-            #{request.playerSpawn,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler},
-            #{request.robotSpawn,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler},
-            COALESCE(#{request.robotStory}, ''),
-            COALESCE(NULLIF(#{request.storyGraphJson}, ''), '{"nodes":[],"edges":[],"variables":[]}'),
-            COALESCE(NULLIF(#{request.zombieSpawnsJson}, ''), '[]'),
-            COALESCE(NULLIF(#{request.placedObjectsJson}, ''), '[]')
+            #{name},
+            #{slug},
+            #{description},
+            COALESCE(NULLIF(#{status}, ''), 'draft'),
+            #{mapModelUrl},
+            #{playerCharacterJson},
+            #{playerSpawnJson},
+            #{robotSpawnJson},
+            COALESCE(#{robotStory}, ''),
+            COALESCE(NULLIF(#{storyGraphJson}, ''), '{"nodes":[],"edges":[],"variables":[]}'),
+            COALESCE(NULLIF(#{zombieSpawnsJson}, ''), '[]'),
+            COALESCE(NULLIF(#{mapCharactersJson}, ''), '[]'),
+            COALESCE(NULLIF(#{placedObjectsJson}, ''), '[]'),
+            COALESCE(#{maxPlayers}, 50),
+            #{publishedAt},
+            #{archivedAt}
         )
         ON CONFLICT(id) DO UPDATE SET
             name = excluded.name,
+            slug = excluded.slug,
+            description = excluded.description,
+            status = excluded.status,
             map_model_url = excluded.map_model_url,
             player_character_json = excluded.player_character_json,
             player_spawn_json = excluded.player_spawn_json,
@@ -63,7 +82,11 @@
             robot_story = excluded.robot_story,
             story_graph_json = excluded.story_graph_json,
             zombie_spawns_json = excluded.zombie_spawns_json,
+            map_characters_json = excluded.map_characters_json,
             placed_objects_json = excluded.placed_objects_json,
+            max_players = excluded.max_players,
+            published_at = excluded.published_at,
+            archived_at = excluded.archived_at,
             updated_at = CURRENT_TIMESTAMP
     </insert>
 

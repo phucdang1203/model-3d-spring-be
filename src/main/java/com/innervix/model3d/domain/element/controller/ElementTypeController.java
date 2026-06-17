@@ -23,12 +23,12 @@ public class ElementTypeController {
         this.service = service;
     }
 
-    @GetMapping("/api/v1/element-types")
+    @GetMapping({"/api/v1/element-types", "/api/element-types"})
     public ApiResponse<List<ElementType>> list() {
         return ApiResponse.ok(service.listActive());
     }
 
-    @PostMapping("/api/v1/admin/element-types")
+    @PostMapping({"/api/v1/admin/element-types", "/api/element-types"})
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ElementType> create(@Valid @RequestBody ElementTypeRequest request) {
         return ApiResponse.ok(service.create(request));

@@ -100,6 +100,9 @@ CREATE INDEX IF NOT EXISTS idx_animation_assets_format
 CREATE TABLE IF NOT EXISTS levels (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  slug TEXT UNIQUE,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'draft',
   map_model_url TEXT NOT NULL,
   player_character_json TEXT,
   player_spawn_json TEXT NOT NULL,
@@ -107,13 +110,31 @@ CREATE TABLE IF NOT EXISTS levels (
   robot_story TEXT NOT NULL,
   story_graph_json TEXT NOT NULL,
   zombie_spawns_json TEXT NOT NULL,
+  map_characters_json TEXT NOT NULL DEFAULT '[]',
   placed_objects_json TEXT NOT NULL,
+  max_players INTEGER NOT NULL DEFAULT 50,
+  published_at DATETIME,
+  archived_at DATETIME,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_levels_updated_at
   ON levels (updated_at);
+
+ALTER TABLE levels ADD COLUMN slug TEXT;
+ALTER TABLE levels ADD COLUMN description TEXT;
+ALTER TABLE levels ADD COLUMN status TEXT NOT NULL DEFAULT 'draft';
+ALTER TABLE levels ADD COLUMN map_characters_json TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE levels ADD COLUMN max_players INTEGER NOT NULL DEFAULT 50;
+ALTER TABLE levels ADD COLUMN published_at DATETIME;
+ALTER TABLE levels ADD COLUMN archived_at DATETIME;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_levels_slug
+  ON levels (slug);
+
+CREATE INDEX IF NOT EXISTS idx_levels_status_published
+  ON levels (status, published_at);
 
 CREATE TABLE IF NOT EXISTS game_sessions (
   id TEXT PRIMARY KEY,

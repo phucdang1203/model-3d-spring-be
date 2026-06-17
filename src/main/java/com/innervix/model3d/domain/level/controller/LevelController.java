@@ -23,22 +23,27 @@ public class LevelController {
         this.service = service;
     }
 
-    @GetMapping("/api/v1/game/levels")
-    public ApiResponse<List<Level>> listForGame() {
+    @GetMapping({"/api/v1/game/levels", "/api/levels", "/api/maps"})
+    public ApiResponse<List<LevelResponse>> listForGame() {
         return ApiResponse.ok(service.list());
     }
 
-    @GetMapping("/api/v1/admin/levels")
-    public ApiResponse<List<Level>> listForAdmin() {
+    @GetMapping({"/api/v1/admin/levels", "/api/admin/maps"})
+    public ApiResponse<List<LevelResponse>> listForAdmin() {
         return ApiResponse.ok(service.list());
     }
 
-    @PostMapping("/api/v1/admin/levels")
-    public ApiResponse<Level> save(@Valid @RequestBody LevelRequest request) {
+    @GetMapping({"/api/levels/{id}", "/api/maps/{id}"})
+    public ApiResponse<LevelResponse> detail(@PathVariable String id) {
+        return ApiResponse.ok(service.detail(id));
+    }
+
+    @PostMapping({"/api/v1/admin/levels", "/api/levels"})
+    public ApiResponse<LevelResponse> save(@Valid @RequestBody LevelRequest request) {
         return ApiResponse.ok(service.save(request));
     }
 
-    @DeleteMapping("/api/v1/admin/levels/{id}")
+    @DeleteMapping({"/api/v1/admin/levels/{id}", "/api/levels/{id}"})
     public ApiResponse<Void> delete(@PathVariable String id) {
         service.delete(id);
         return ApiResponse.ok();

@@ -1,19 +1,24 @@
 package com.innervix.model3d.domain.level.model;
 
-import com.innervix.model3d.common.model.Vector3;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record LevelRequest(
         String id,
         @NotBlank String name,
+        String slug,
+        String description,
+        String status,
         @NotBlank String mapModelUrl,
-        String playerCharacterJson,
-        @NotNull Vector3 playerSpawn,
-        @NotNull Vector3 robotSpawn,
+        Object playerCharacter,
+        Object playerSpawn,
+        Object robotSpawn,
         String robotStory,
-        String storyGraphJson,
-        String zombieSpawnsJson,
-        String placedObjectsJson
+        Object storyGraph,
+        Object zombieSpawns,
+        Object mapCharacters,
+        Object placedObjects,
+        Integer maxPlayers,
+        String publishedAt,
+        String archivedAt
 ) {
 }
