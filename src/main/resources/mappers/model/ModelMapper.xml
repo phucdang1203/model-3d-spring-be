@@ -48,9 +48,9 @@
         WHERE 1 = 1
         <if test="q != null and q != ''">
             AND (
-                LOWER(name) LIKE CONCAT('%', LOWER(#{q}), '%')
-                OR LOWER(COALESCE(description, '')) LIKE CONCAT('%', LOWER(#{q}), '%')
-                OR LOWER(tags_json) LIKE CONCAT('%', LOWER(#{q}), '%')
+                LOWER(name) LIKE '%' || LOWER(#{q}) || '%'
+                OR LOWER(COALESCE(description, '')) LIKE '%' || LOWER(#{q}) || '%'
+                OR LOWER(tags_json) LIKE '%' || LOWER(#{q}) || '%'
             )
         </if>
         <if test="category != null and category != ''">
@@ -106,19 +106,22 @@
             custom_props_json = #{request.customPropsJson},
             position_json = COALESCE(#{request.position,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, position_json),
             rotation_json = COALESCE(#{request.rotation,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, rotation_json),
-            scale_json = COALESCE(#{request.scale,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, scale_json)
+            scale_json = COALESCE(#{request.scale,typeHandler=com.innervix.model3d.common.mybatis.Vector3JsonTypeHandler}, scale_json),
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = #{id}
     </update>
 
     <update id="incrementView">
         UPDATE model_assets
-        SET view_count = view_count + 1
+        SET view_count = view_count + 1,
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = #{id}
     </update>
 
     <update id="incrementDownload">
         UPDATE model_assets
-        SET download_count = download_count + 1
+        SET download_count = download_count + 1,
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = #{id}
     </update>
 

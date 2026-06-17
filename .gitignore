@@ -7,4 +7,7 @@ uploads/
 upload-files/
 logs/
 *.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 src/main/resources/application-local.yml

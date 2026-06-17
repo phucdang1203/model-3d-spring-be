@@ -1,131 +1,137 @@
-CREATE DATABASE IF NOT EXISTS model_3d CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE model_3d;
+PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS admin_users (
-  id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Internal primary key for administrator accounts.',
-  username VARCHAR(80) NOT NULL COMMENT 'Unique administrator login name.',
-  password_hash VARCHAR(255) NOT NULL COMMENT 'BCrypt password hash used by Spring Security.',
-  display_name VARCHAR(120) NULL COMMENT 'Human readable administrator name.',
-  role VARCHAR(40) NOT NULL DEFAULT 'ADMIN' COMMENT 'Security role. Keep ADMIN for management APIs.',
-  enabled TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Whether this administrator account can authenticate.',
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Creation timestamp.',
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Last update timestamp.',
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_admin_users_username (username)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Administrator accounts for secured management endpoints.';
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  display_name TEXT,
+  role TEXT NOT NULL DEFAULT 'ADMIN',
+  enabled INTEGER NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS element_types (
-  id CHAR(36) NOT NULL COMMENT 'Stable UUID for an extensible 3D element type.',
-  element_key VARCHAR(80) NOT NULL COMMENT 'Machine key such as structural, display, signage.',
-  name VARCHAR(120) NOT NULL COMMENT 'Display name for UI filters.',
-  description TEXT NULL COMMENT 'Explanation of how this element type should be used.',
-  icon VARCHAR(80) NULL COMMENT 'Optional frontend icon key.',
-  color VARCHAR(32) NULL COMMENT 'Optional hex color used by the frontend.',
-  sort_order INT NOT NULL DEFAULT 0 COMMENT 'Ordering value for menus.',
-  active TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Soft visibility flag.',
-  schema_json JSON NULL COMMENT 'Optional future validation metadata for this element type.',
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Creation timestamp.',
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Last update timestamp.',
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_element_types_key (element_key),
-  KEY idx_element_types_active_sort (active, sort_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catalog of model element types; designed to be extended without code changes.';
+  id TEXT PRIMARY KEY,
+  element_key TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  description TEXT,
+  icon TEXT,
+  color TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1,
+  schema_json TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_element_types_active_sort
+  ON element_types (active, sort_order);
 
 CREATE TABLE IF NOT EXISTS model_assets (
-  id CHAR(36) NOT NULL COMMENT 'Stable UUID for one uploaded 3D model.',
-  name VARCHAR(180) NOT NULL COMMENT 'Model display name.',
-  description TEXT NULL COMMENT 'Model description supplied by admin.',
-  tags_json JSON NOT NULL COMMENT 'Array of searchable tags.',
-  category VARCHAR(40) NOT NULL DEFAULT 'other' COMMENT 'High-level category: architecture, character, vehicle, environment, prop, furniture, electronics, other.',
-  element_type_id CHAR(36) NULL COMMENT 'Optional link to element_types for extensible classification.',
-  license VARCHAR(40) NOT NULL DEFAULT 'CC0' COMMENT 'License code: CC0, CC_BY, MIT, proprietary.',
-  original_filename VARCHAR(255) NOT NULL COMMENT 'Original uploaded filename.',
-  format VARCHAR(20) NOT NULL COMMENT 'Stored model format such as glb, gltf, obj, fbx, stl, ply, usdz.',
-  file_url VARCHAR(500) NOT NULL COMMENT 'Public relative URL for model download/rendering.',
-  thumbnail_url VARCHAR(500) NULL COMMENT 'Optional public relative URL for preview thumbnail.',
-  file_size BIGINT NOT NULL COMMENT 'Stored file size in bytes.',
-  polygon_count INT NULL COMMENT 'Optional geometry polygon count.',
-  vertex_count INT NULL COMMENT 'Optional geometry vertex count.',
-  material_count INT NULL COMMENT 'Optional material count.',
-  has_animations TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Whether this model has animation data.',
-  has_textures TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Whether this model references textures.',
-  custom_props_json JSON NULL COMMENT 'Flexible model metadata for rigging, source normalization, and future flags.',
-  bounding_box_json JSON NULL COMMENT 'Optional bounding box metadata from model analysis.',
-  position_json JSON NOT NULL COMMENT 'Default editor position vector [x,y,z].',
-  rotation_json JSON NOT NULL COMMENT 'Default editor rotation vector [x,y,z].',
-  scale_json JSON NOT NULL COMMENT 'Default editor scale vector [x,y,z].',
-  download_count INT NOT NULL DEFAULT 0 COMMENT 'Total download counter.',
-  view_count INT NOT NULL DEFAULT 0 COMMENT 'Total detail-view counter.',
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Creation timestamp.',
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Last update timestamp.',
-  PRIMARY KEY (id),
-  KEY idx_model_assets_category (category),
-  KEY idx_model_assets_format (format),
-  KEY idx_model_assets_element_type (element_type_id),
-  CONSTRAINT fk_model_assets_element_type FOREIGN KEY (element_type_id) REFERENCES element_types(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Uploaded 3D model catalog and editor metadata.';
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  tags_json TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'other',
+  element_type_id TEXT,
+  license TEXT NOT NULL DEFAULT 'CC0',
+  original_filename TEXT NOT NULL,
+  format TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  file_size INTEGER NOT NULL,
+  polygon_count INTEGER,
+  vertex_count INTEGER,
+  material_count INTEGER,
+  has_animations INTEGER NOT NULL DEFAULT 0,
+  has_textures INTEGER NOT NULL DEFAULT 0,
+  custom_props_json TEXT,
+  bounding_box_json TEXT,
+  position_json TEXT NOT NULL,
+  rotation_json TEXT NOT NULL,
+  scale_json TEXT NOT NULL,
+  download_count INTEGER NOT NULL DEFAULT 0,
+  view_count INTEGER NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (element_type_id) REFERENCES element_types(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_model_assets_category
+  ON model_assets (category);
+
+CREATE INDEX IF NOT EXISTS idx_model_assets_format
+  ON model_assets (format);
+
+CREATE INDEX IF NOT EXISTS idx_model_assets_element_type
+  ON model_assets (element_type_id);
 
 CREATE TABLE IF NOT EXISTS model_versions (
-  id CHAR(36) NOT NULL COMMENT 'Stable UUID for a model version snapshot.',
-  model_id CHAR(36) NOT NULL COMMENT 'Model that owns this version.',
-  version_number INT NOT NULL COMMENT 'Incremental version number per model.',
-  file_url VARCHAR(500) NOT NULL COMMENT 'Public relative URL of the versioned model file.',
-  change_note TEXT NULL COMMENT 'Optional admin note explaining the version.',
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Creation timestamp.',
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_model_versions_number (model_id, version_number),
-  CONSTRAINT fk_model_versions_model FOREIGN KEY (model_id) REFERENCES model_assets(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Version history for uploaded 3D models.';
+  id TEXT PRIMARY KEY,
+  model_id TEXT NOT NULL,
+  version_number INTEGER NOT NULL,
+  file_url TEXT NOT NULL,
+  change_note TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (model_id, version_number),
+  FOREIGN KEY (model_id) REFERENCES model_assets(id) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS animation_assets (
-  id CHAR(36) NOT NULL COMMENT 'Stable UUID for an uploaded animation source.',
-  name VARCHAR(180) NOT NULL COMMENT 'Animation display name.',
-  description TEXT NULL COMMENT 'Animation description supplied by admin.',
-  tags_json JSON NOT NULL COMMENT 'Array of searchable tags.',
-  source_kind VARCHAR(20) NOT NULL COMMENT 'single for one FBX or pack for ZIP bundles.',
-  original_filename VARCHAR(255) NOT NULL COMMENT 'Original uploaded filename.',
-  format VARCHAR(20) NOT NULL COMMENT 'Stored animation format: fbx or zip.',
-  file_url VARCHAR(500) NOT NULL COMMENT 'Public relative URL for the stored animation source.',
-  file_size BIGINT NOT NULL COMMENT 'Stored file size in bytes.',
-  action_count INT NOT NULL DEFAULT 1 COMMENT 'Number of actions represented by this asset.',
-  actions_json JSON NOT NULL COMMENT 'Action manifest with action ids, names, and source paths.',
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Creation timestamp.',
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Last update timestamp.',
-  PRIMARY KEY (id),
-  KEY idx_animation_assets_format (format)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Uploaded FBX/ZIP animation sources for character actions.';
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  tags_json TEXT NOT NULL,
+  source_kind TEXT NOT NULL,
+  original_filename TEXT NOT NULL,
+  format TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  action_count INTEGER NOT NULL DEFAULT 1,
+  actions_json TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_animation_assets_format
+  ON animation_assets (format);
 
 CREATE TABLE IF NOT EXISTS levels (
-  id CHAR(36) NOT NULL COMMENT 'Stable UUID for a playable level.',
-  name VARCHAR(180) NOT NULL COMMENT 'Level display name.',
-  map_model_url VARCHAR(500) NOT NULL COMMENT 'Public relative URL for the map model.',
-  player_character_json JSON NULL COMMENT 'Optional selected player character metadata.',
-  player_spawn_json JSON NOT NULL COMMENT 'Player spawn vector [x,y,z].',
-  robot_spawn_json JSON NOT NULL COMMENT 'Robot/NPC spawn vector [x,y,z].',
-  robot_story TEXT NOT NULL COMMENT 'Plain story text used by the NPC.',
-  story_graph_json JSON NOT NULL COMMENT 'Node graph for story/dialogue/game events.',
-  zombie_spawns_json JSON NOT NULL COMMENT 'Enemy spawn definitions.',
-  placed_objects_json JSON NOT NULL COMMENT 'Placed map/object instances for the level.',
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Creation timestamp.',
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'Last update timestamp.',
-  PRIMARY KEY (id),
-  KEY idx_levels_updated_at (updated_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Playable game levels assembled from uploaded models.';
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  map_model_url TEXT NOT NULL,
+  player_character_json TEXT,
+  player_spawn_json TEXT NOT NULL,
+  robot_spawn_json TEXT NOT NULL,
+  robot_story TEXT NOT NULL,
+  story_graph_json TEXT NOT NULL,
+  zombie_spawns_json TEXT NOT NULL,
+  placed_objects_json TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_levels_updated_at
+  ON levels (updated_at);
 
 CREATE TABLE IF NOT EXISTS game_sessions (
-  id CHAR(36) NOT NULL COMMENT 'Stable UUID for one public game session.',
-  player_name VARCHAR(120) NOT NULL COMMENT 'Player character name entered before starting the game.',
-  level_id CHAR(36) NULL COMMENT 'Optional level selected for the session.',
-  state_json JSON NULL COMMENT 'Flexible runtime state checkpoint for future save/resume support.',
-  started_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Session start timestamp.',
-  last_seen_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'Last heartbeat or progress update timestamp.',
-  PRIMARY KEY (id),
-  KEY idx_game_sessions_player_name (player_name),
-  KEY idx_game_sessions_level (level_id),
-  CONSTRAINT fk_game_sessions_level FOREIGN KEY (level_id) REFERENCES levels(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Public game sessions; no login required, only a player name.';
+  id TEXT PRIMARY KEY,
+  player_name TEXT NOT NULL,
+  level_id TEXT,
+  state_json TEXT,
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (level_id) REFERENCES levels(id) ON DELETE SET NULL
+);
 
-INSERT IGNORE INTO element_types (id, element_key, name, description, color, sort_order)
+CREATE INDEX IF NOT EXISTS idx_game_sessions_player_name
+  ON game_sessions (player_name);
+
+CREATE INDEX IF NOT EXISTS idx_game_sessions_level
+  ON game_sessions (level_id);
+
+INSERT OR IGNORE INTO element_types (id, element_key, name, description, color, sort_order)
 VALUES
   ('11111111-1111-1111-1111-111111111111', 'structural', 'Structural', 'Walls, floors, ceilings, frames', '#8b7d6b', 1),
   ('22222222-2222-2222-2222-222222222222', 'display', 'Display', 'Screens, panels, media surfaces', '#3b82f6', 2),

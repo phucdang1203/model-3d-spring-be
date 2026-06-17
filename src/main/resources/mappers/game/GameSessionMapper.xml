@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.innervix.model3d.domain.game.model.GameSessionMapper">
+<mapper namespace="com.innervix.model3d.domain.game.mapper.GameSessionMapper">
     <resultMap id="GameSessionMap" type="com.innervix.model3d.domain.game.model.GameSession">
         <constructor>
             <idArg column="id" javaType="string"/>

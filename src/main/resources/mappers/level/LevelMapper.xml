@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.innervix.model3d.domain.level.model.LevelMapper">
+<mapper namespace="com.innervix.model3d.domain.level.mapper.LevelMapper">
     <resultMap id="LevelMap" type="com.innervix.model3d.domain.level.model.Level">
         <constructor>
             <idArg column="id" javaType="string"/>
@@ -54,16 +54,17 @@
             COALESCE(NULLIF(#{request.zombieSpawnsJson}, ''), '[]'),
             COALESCE(NULLIF(#{request.placedObjectsJson}, ''), '[]')
         )
-        ON DUPLICATE KEY UPDATE
-            name = VALUES(name),
-            map_model_url = VALUES(map_model_url),
-            player_character_json = VALUES(player_character_json),
-            player_spawn_json = VALUES(player_spawn_json),
-            robot_spawn_json = VALUES(robot_spawn_json),
-            robot_story = VALUES(robot_story),
-            story_graph_json = VALUES(story_graph_json),
-            zombie_spawns_json = VALUES(zombie_spawns_json),
-            placed_objects_json = VALUES(placed_objects_json)
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            map_model_url = excluded.map_model_url,
+            player_character_json = excluded.player_character_json,
+            player_spawn_json = excluded.player_spawn_json,
+            robot_spawn_json = excluded.robot_spawn_json,
+            robot_story = excluded.robot_story,
+            story_graph_json = excluded.story_graph_json,
+            zombie_spawns_json = excluded.zombie_spawns_json,
+            placed_objects_json = excluded.placed_objects_json,
+            updated_at = CURRENT_TIMESTAMP
     </insert>
 
     <delete id="delete">

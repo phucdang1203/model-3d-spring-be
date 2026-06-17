@@ -8,12 +8,22 @@ Spring Boot rewrite of the `control3D-main` backend API.
 gradle bootRun
 ```
 
-The default database is:
+The local profile runs on:
 
 ```text
-jdbc:mariadb://127.0.0.1:3306/model_3d
-username: root
-password: admin
+http://localhost:8778
+```
+
+The default local database is SQLite. It is created automatically at:
+
+```text
+model3d-local.sqlite
+```
+
+The schema is initialized from:
+
+```text
+src/main/resources/db/schema.sql
 ```
 
 ## Security Modes
@@ -39,4 +49,4 @@ Then Admin APIs require a Bearer token from `POST /api/v1/admin/auth/login`. Gam
 - `GET /api/v1/game/levels`: public playable levels.
 - `POST /api/v1/game/sessions/start`: start a public game session with a player name.
 
-Swagger UI is available at `/swagger-ui.html`.
+Swagger UI is available at `http://localhost:8778/swagger-ui.html`.
