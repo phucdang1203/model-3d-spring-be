@@ -136,6 +136,27 @@ CREATE UNIQUE INDEX IF NOT EXISTS uk_levels_slug
 CREATE INDEX IF NOT EXISTS idx_levels_status_published
   ON levels (status, published_at);
 
+CREATE TABLE IF NOT EXISTS game_characters (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  model_id TEXT,
+  file_url TEXT NOT NULL,
+  format TEXT,
+  animation_manifest_json TEXT,
+  base_stats_json TEXT,
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (model_id) REFERENCES model_assets(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_game_characters_model
+  ON game_characters (model_id);
+
+CREATE INDEX IF NOT EXISTS idx_game_characters_active
+  ON game_characters (active);
+
 CREATE TABLE IF NOT EXISTS game_sessions (
   id TEXT PRIMARY KEY,
   player_name TEXT NOT NULL,

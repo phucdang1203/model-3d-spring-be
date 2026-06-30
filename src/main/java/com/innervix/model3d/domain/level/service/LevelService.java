@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -28,6 +29,12 @@ public class LevelService {
         return mapper.findAll().stream().map(level -> LevelResponse.from(level, json)).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<LevelResponse> listPublished() {
+        return list().stream()
+                .filter(level -> "published".equals(level.status()))
+                .toList();
+    }
     @Transactional(readOnly = true)
     public LevelResponse detail(String id) {
         return mapper.findById(id)
@@ -71,6 +78,38 @@ public class LevelService {
     }
 
     @Transactional
+    public LevelResponse update(String id, LevelPatchRequest request) {
+        LevelResponse current = detail(id);
+        return save(new LevelRequest(
+                id,
+                valueOrCurrent(request.name(), current.name()),
+                valueOrCurrent(request.slug(), current.slug()),
+                request.description() == null ? current.description() : request.description(),
+                valueOrCurrent(request.status(), current.status()),
+                valueOrCurrent(request.mapModelUrl(), current.mapModelUrl()),
+                request.playerCharacter() == null ? current.playerCharacter() : request.playerCharacter(),
+                request.playerSpawn() == null ? current.playerSpawn() : request.playerSpawn(),
+                request.robotSpawn() == null ? current.robotSpawn() : request.robotSpawn(),
+                request.robotStory() == null ? current.robotStory() : request.robotStory(),
+                request.storyGraph() == null ? current.storyGraph() : request.storyGraph(),
+                request.zombieSpawns() == null ? current.zombieSpawns() : request.zombieSpawns(),
+                request.mapCharacters() == null ? current.mapCharacters() : request.mapCharacters(),
+                request.placedObjects() == null ? current.placedObjects() : request.placedObjects(),
+                request.maxPlayers() == null ? current.maxPlayers() : request.maxPlayers(),
+                request.publishedAt() == null ? dateToString(current.publishedAt()) : request.publishedAt(),
+                request.archivedAt() == null ? dateToString(current.archivedAt()) : request.archivedAt()
+        ));
+    }
+
+    @Transactional
+    public LevelResponse updateStatus(String id, String status) {
+        return update(id, new LevelPatchRequest(
+                null, null, null, status, null, null, null, null, null,
+                null, null, null, null, null, null, null
+        ));
+    }
+
+    @Transactional
     public void delete(String id) {
         if (!mapper.delete(id)) {
             throw new IllegalArgumentException("Level not found");
@@ -98,6 +137,14 @@ public class LevelService {
 
     private String valueOrNow(String value) {
         return value == null || value.isBlank() ? LocalDateTime.now().toString() : value;
+    }
+
+    private String valueOrCurrent(String value, String current) {
+        return value == null ? current : value;
+    }
+
+    private String dateToString(LocalDateTime value) {
+        return Objects.isNull(value) ? null : value.toString();
     }
 
     private String slugify(String input) {

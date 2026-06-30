@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innervix.model3d.domain.character.mapper.GameCharacterMapper">
+    <resultMap id="GameCharacterMap" type="com.innervix.model3d.domain.character.model.GameCharacter">
+        <constructor>
+            <idArg column="id" javaType="string"/>
+            <arg column="name" javaType="string"/>
+            <arg column="description" javaType="string"/>
+            <arg column="model_id" javaType="string"/>
+            <arg column="file_url" javaType="string"/>
+            <arg column="format" javaType="string"/>
+            <arg column="animation_manifest_json" javaType="string"/>
+            <arg column="base_stats_json" javaType="string"/>
+            <arg column="active" javaType="boolean"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, name, description, model_id, file_url, format, animation_manifest_json,
+        base_stats_json, active, created_at, updated_at
+    </sql>
+
+    <select id="findAll" resultMap="GameCharacterMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM game_characters
+        <if test="!includeInactive">
+            WHERE active = 1
+        </if>
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="findById" resultMap="GameCharacterMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM game_characters
+        WHERE id = #{id}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO game_characters (
+            id, name, description, model_id, file_url, format, animation_manifest_json, base_stats_json, active
+        ) VALUES (
+            #{id}, #{name}, #{description}, #{modelId}, #{fileUrl}, #{format},
+            #{animationManifestJson}, #{baseStatsJson}, CASE WHEN #{active} THEN 1 ELSE 0 END
+        )
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            description = excluded.description,
+            model_id = excluded.model_id,
+            file_url = excluded.file_url,
+            format = excluded.format,
+            animation_manifest_json = excluded.animation_manifest_json,
+            base_stats_json = excluded.base_stats_json,
+            active = excluded.active,
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <update id="setActive">
+        UPDATE game_characters
+        SET active = CASE WHEN #{active} THEN 1 ELSE 0 END,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+</mapper>
