@@ -1,6 +1,8 @@
 package com.innervix.model3d.common;
 
 import com.innervix.model3d.config.AppProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +16,9 @@ import java.util.Set;
 public class FileStorageService {
 
     public static final String PUBLIC_UPLOAD_PATH = "/upload-files";
+    public static final String LEGACY_PUBLIC_UPLOAD_PATH = "/uploads";
+
+    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
     private static final Set<String> MODEL_FORMATS = Set.of("glb", "gltf", "obj", "fbx", "stl", "ply", "usdz");
     private static final Set<String> ANIMATION_FORMATS = Set.of("fbx", "zip");
@@ -22,6 +27,18 @@ public class FileStorageService {
 
     public FileStorageService(AppProperties properties) {
         this.uploadRoot = Path.of(properties.getUploadDir()).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(uploadRoot);
+            log.info("Control3D upload root ready: uploadRoot={}, publicPaths=[{}, {}]",
+                    uploadRoot, PUBLIC_UPLOAD_PATH, LEGACY_PUBLIC_UPLOAD_PATH);
+        } catch (Exception ex) {
+            log.error("Control3D upload root could not be created: uploadRoot={}", uploadRoot, ex);
+            throw new IllegalStateException("Could not initialize upload directory: " + uploadRoot, ex);
+        }
+    }
+
+    public Path getUploadRoot() {
+        return uploadRoot;
     }
 
     public StoredFile storeModel(String id, MultipartFile file) {
@@ -53,8 +70,13 @@ public class FileStorageService {
             Files.createDirectories(directory);
             Path target = directory.resolve("source." + format).normalize();
             file.transferTo(target);
-            return new StoredFile(originalFilename, format, publicBaseUrl + "/" + id + "/source." + format, file.getSize());
+            String publicUrl = publicBaseUrl + "/" + id + "/source." + format;
+            log.info("Stored uploaded file: id={}, originalFilename={}, format={}, size={}, target={}, publicUrl={}",
+                    id, originalFilename, format, file.getSize(), target, publicUrl);
+            return new StoredFile(originalFilename, format, publicUrl, file.getSize());
         } catch (Exception ex) {
+            log.error("Could not store uploaded file: id={}, groupPath={}, originalFilename={}, uploadRoot={}",
+                    id, groupPath, originalFilename, uploadRoot, ex);
             throw new IllegalStateException("Could not store uploaded file", ex);
         }
     }
